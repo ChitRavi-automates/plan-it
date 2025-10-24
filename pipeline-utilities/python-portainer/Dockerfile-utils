@@ -1,0 +1,8 @@
+# Base image
+# Runs portainer.py to deploy/teardown stacks in a portainer environment
+FROM python:3.13-alpine
+# Set directory and copy over files
+WORKDIR /app
+COPY requirements-api-handler.txt requirements.txt
+RUN pip install -r requirements.txt
+COPY portainer.py .

@@ -1,0 +1,16 @@
+# Base image for MSSQL
+FROM mcr.microsoft.com/mssql/server:2022-latest
+
+# Set working directory and copy initialization script
+WORKDIR /usr/src/app
+COPY db-init.sql .
+
+# Environment variables for MSSQL
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=${DB_PASSWORD}
+ENV MSSQL_PID=Developer
+
+# Start SQL Server and initialize the database
+CMD /opt/mssql/bin/sqlservr & sleep 20s && \
+    /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${DB_PASSWORD} -i db-init.sql && \
+    tail -f /dev/null

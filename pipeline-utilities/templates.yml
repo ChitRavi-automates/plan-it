@@ -1,0 +1,51 @@
+# Template for all build jobs change to dummy checkin
+.build-template:
+  before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  - export CI_COMMIT_REF_NAME=$(echo "$CI_COMMIT_REF_NAME" | tr '[:upper:]' '[:lower:]')
+  - if [[ $CI_COMMIT_REF_NAME = $CI_DEFAULT_BRANCH ]]; then DOCKER_TAG=latest; else DOCKER_TAG=$CI_COMMIT_REF_NAME; fi
+
+# Extends the base build template for the main build stage
+.build-apps:
+  extends: .build-template
+  stage: build
+  image: $CI_REGISTRY_IMAGE/builder:latest
+  variables:
+    REACT_FOLDER: "frontend"
+    DOTNET_FOLDER: "backend"
+
+# Generate and publish a new Dockerimage of our .NET-application
+# Runs on any change in back-end folder
+.build-dotnet:
+  extends: .build-apps
+  script:
+  - cp "$PIPELINE_UTILS"/dotnet/Dockerfile-dotnet "$DOTNET_FOLDER"
+  # - cp "$REACT_FOLDER"/planit.client.esproj "$DOTNET_FOLDER"
+  - cd "$DOTNET_FOLDER"
+  #- envsubst <appsettings-secrets.json >appsettings.json
+  #- cat appsettings.json
+  - export IMAGE_NAME="$CI_REGISTRY_IMAGE/dotnet:$DOCKER_TAG"
+  - echo "Building $IMAGE_NAME"
+  - docker buildx build --cache-from="$IMAGE_NAME" -t "$IMAGE_NAME" --push -f Dockerfile-dotnet .
+  rules:
+  - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  - if: $CI_MERGE_REQUEST_ID
+    changes:
+    - $DOTNET_FOLDER/**/*
+    #- $REACT_FOLDER/planit.client.esproj
+
+.build-react:
+  extends: .build-apps
+  script:
+  - cp "$PIPELINE_UTILS"/react/* "$REACT_FOLDER"
+  - cd "$REACT_FOLDER"
+  - export IMAGE_NAME="$CI_REGISTRY_IMAGE/react:$DOCKER_TAG"
+  - echo "Building $IMAGE_NAME"
+  #- docker buildx build --cache-from="$IMAGE_NAME" -t "$IMAGE_NAME" --push -f Dockerfile-react .
+  - docker buildx build --pull -t "$IMAGE_NAME" --push -f Dockerfile-react .
+
+  rules:
+  - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  - if: $CI_MERGE_REQUEST_ID
+    changes:
+    - $REACT_FOLDER/**/*

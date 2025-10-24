@@ -1,0 +1,47 @@
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin: 0;
+}
+
+
+.navbar{
+  background-color: rgb(72, 0, 255);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  color: inherit;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.site-title{
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.navbar li{
+  display: inline;
+  margin-right: 60px;
+  font-size: 22px;
+  text-decoration: none;
+  color: white;
+}
+
+a {
+  text-decoration: none; 
+  color: inherit;
+}
+
+.navbar li:active{
+  background-color: rgb(209, 31, 18)
+}
+  
+.navbar li:hover{
+  background-color: rgba(0, 13, 152, 0.276);
+}
+
+

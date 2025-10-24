@@ -1,0 +1,119 @@
+.dashboard {
+  font-family: 'Segoe UI', sans-serif;
+  padding: 30px;
+  background-color: #f5f5f5;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.dashboard-header .date {
+  font-size: 16px;
+  color: #555;
+}
+
+.card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.mood-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.mood-buttons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.mood-buttons button:hover {
+  background-color: #f0f0f0;
+}
+
+.mood-selected {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mood-selected textarea {
+  resize: none;
+  min-height: 80px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.mood-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.mood-actions button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #1976d2;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mood-actions button:hover {
+  background-color: #115293;
+}
+
+.pulse-wheels {
+  display: flex;
+  gap: 20px;
+}
+
+.wheel {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.happy {
+  background-color: green;
+}
+
+.neutral {
+  background-color: orange;
+}
+
+.sad {
+  background-color: red;
+}
+
+
+

@@ -1,0 +1,122 @@
+include:
+  - local: pipeline-utilities/variables.yml
+  - local: pipeline-utilities/templates.yml
+
+stages:
+  - pre-build
+  - check
+  - build
+  - test
+  - deploy
+  - teardown
+
+# Build builder based on docker:latest
+build-builder:
+  extends: .build-template
+  stage: pre-build
+  image: docker:latest
+  script:
+    - cd "$PIPELINE_UTILS/builder"
+    - export IMAGE_NAME="$CI_REGISTRY_IMAGE/builder:latest"
+    - echo "Building $IMAGE_NAME"
+    - docker buildx build --cache-from="$IMAGE_NAME" -t "$IMAGE_NAME" --push -f Dockerfile-builder .
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes:
+        - $PIPELINE_UTILS/builder/*
+
+# Runs a pipeline that builds a base of all 3 images on fresh merge requests.
+child-build-pipeline:
+  stage: check
+  trigger:
+    include:
+      - local: $PIPELINE_UTILS/build-base-images.yml
+    strategy: depend
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  allow_failure: true
+
+# Generate and publish a new Dockerimage of our .NET-application
+# Runs on any change in back-end folder
+build-dotnet-image:
+  extends: .build-dotnet
+
+
+# Generate and publish a new Dockerimage of our React-application
+# Runs on any change in front-end fold
+build-react-image:
+  extends: .build-react
+
+# Generates an image of MSSQL and loads specified state from SQL file
+# Runs on any change to SQL-file
+#build-db-image:
+#  extends: .build-db
+
+# Build image containing python packages and script to deploy on Portainer
+# ONLY build on when on main branch and any relevant files change
+build-utils:
+  extends: .build-apps
+  script:
+    - cd "$PIPELINE_UTILS"/python-portainer
+    - export IMAGE_NAME="$CI_REGISTRY_IMAGE/utils:latest"
+    - echo "Building $IMAGE_NAME"
+    - docker buildx build --cache-from="$IMAGE_NAME" -t "$IMAGE_NAME" --push -f Dockerfile-utils .
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes:
+        - $PIPELINE_UTILS/python-portainer/*
+
+# Run all (fake) tests on codechange and ONLY on branches where there is a merge request
+run-tests:
+  stage: test
+  script:
+    - echo "TOTAL                  353     20    94%"
+  coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+
+# Setup for teardown and deploy
+.base_util_setup:
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  before_script:
+    - export ENDPOINT_NAME="primary"
+    - export CI_PROJECT_NAME=$(echo "$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export CI_COMMIT_REF_NAME=$(echo "$CI_COMMIT_REF_NAME" | tr '[:upper:]' '[:lower:]')
+    - export STACK_NAME="g13-$CI_COMMIT_REF_SLUG"
+    - cd "$PIPELINE_UTILS"/python-portainer
+    - set -e
+
+# Environment name reference
+.environment_setup: &env_setup
+  name: review/$CI_COMMIT_REF_NAME
+
+deploy:
+  extends: .base_util_setup
+  stage: deploy
+  environment:
+    <<: *env_setup
+    url: https://g13-$CI_COMMIT_REF_SLUG.cc25.chasacademy.dev
+    on_stop: teardown
+  script:
+    - echo "Deploy"
+    - cp ../docker-compose* .
+    # Get correct composefile for main or testbranch
+    - if [[ $CI_COMMIT_REF_NAME = $CI_DEFAULT_BRANCH ]]; then DOCKER_COMPOSE=docker-compose.yml; else DOCKER_COMPOSE=docker-compose-test.yml; fi
+    - python portainer.py $CI_JOB_STAGE -dc $DOCKER_COMPOSE
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+
+teardown:
+  extends: .base_util_setup
+  stage: teardown
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  environment:
+    <<: *env_setup
+    action: stop
+  script:
+    - echo "Teardown"
+    - python portainer.py $CI_JOB_STAGE
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual

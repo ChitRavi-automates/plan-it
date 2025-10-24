@@ -1,0 +1,42 @@
+.howItWorks {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.heading {
+  font-size: 2rem;
+  margin-bottom: 3rem;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: #0564fd;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(255, 255, 255, 0.05);
+}
+
+.stepNumber {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .steps {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .card {
+    width: 30%;
+  }
+}

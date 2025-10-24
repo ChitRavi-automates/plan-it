@@ -1,0 +1,26 @@
+
+
+.header-content-top{
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f5f5;
+  padding: 80px;
+  display: block;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header-title{
+  font-size: 28px;
+  margin: 0;
+}
+
+.header-subtitle{
+  font-size: 18px;
+  font-weight: lighter;
+  color: #666;
+}
+
+.header-subtitle:hover{
+  color: #333;
+} 

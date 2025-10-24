@@ -1,0 +1,14 @@
+
+.message-board{
+  padding: 80px;
+  margin: 80px;
+  font-family: sans-serif;
+  background-color: rgb(255, 255, 255);
+  border-color: gray;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.new-message{
+  display: grid;
+}
